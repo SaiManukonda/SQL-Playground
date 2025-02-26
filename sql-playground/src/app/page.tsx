@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import Editor from "@monaco-editor/react";
+import AvailableTables from "@/components/AvailableTables";
 
 export default function Home() {
   const [leftWidth, setLeftWidth] = useState(0.3); // 30% of total width
@@ -66,7 +67,7 @@ export default function Home() {
         {/* Left Section */}
         <div style={{ width: `${leftWidth * 100}%` }} className="flex flex-col border-r relative">
           <div style={{ height: `${topHeightLeft * 100}%` }} className="p-2 bg-gray-100 relative">
-            Available Tables
+            <AvailableTables />
             <div
               onMouseDown={(e) => handleVerticalResize(e, setTopHeightLeft, topHeightLeft)}
               className="absolute bottom-0 left-0 w-full h-2 cursor-row-resize bg-gray-300"
