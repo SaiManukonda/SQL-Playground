@@ -8,6 +8,7 @@ export default function Home() {
   const [leftWidth, setLeftWidth] = useState(0.3); // 30% of total width
   const [topHeightLeft, setTopHeightLeft] = useState(0.5); // 50% of left section
   const [topHeightRight, setTopHeightRight] = useState(0.5); // 50% of right section
+  const [editorContent, setEditorContent] = useState("-- Write your SQL here");
   const minFraction = 0.2;
   const maxFraction = 0.8;
 
@@ -87,7 +88,8 @@ export default function Home() {
               key={leftWidth} // Forces re-render when width changes
               height="100%"
               defaultLanguage="sql"
-              defaultValue="-- Write your SQL here"
+              value={editorContent} // Controlled value
+              onChange={(newValue) => setEditorContent(newValue || "")}
               theme="vs-dark"
               options={{
                 automaticLayout: true,
