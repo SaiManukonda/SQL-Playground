@@ -3,6 +3,7 @@ import Editor from "@monaco-editor/react";
 import initSqlJs, { Database } from "sql.js";
 import Navbar from './components/Navbar';
 import AvailableTables from "./components/AvailableTables.tsx";
+import QueryOutputTable from './components/QueryOutputTable.tsx';
 
 interface TableRow {
   [key: string]: string | number | null;
@@ -18,6 +19,7 @@ function App() {
   const [maxHeightRight, setMaxHeightRight] = useState(topHeightRight * window.innerHeight);
   const [editorContent, setEditorContent] = useState("-- Write your SQL here");
   const [tables, setTables] = useState<Record<string, TableRow[]>>({});
+  const [queryResults, setQueryResults] = useState<Record<string, TableRow[]> | null>(null);
   const minFraction = 0.2;
   const maxFraction = 0.8;
 
@@ -84,14 +86,33 @@ function App() {
 
   const executeQuery = () => {
     if (!db) return;
-    try {
-      const result = db.exec(editorContent);
-      console.log("Query Result:", result);
-      fetchTables(); // Refresh tables after running a query
-    } catch (err) {
-      console.error("SQL Execution Error:", err);
-    }
+      try {
+          const result = db.exec(editorContent);
+          console.log("Query Result:", result);
+          if (result.length > 0) {
+              const tableData: Record<string, TableRow[]> = {};
+              result.forEach((table) => {
+                  tableData[table.columns.join(", ")] = table.values.map((row) =>
+                      Object.fromEntries(table.columns.map((col, index) => {
+                          let value = row[index];
+                          if (value instanceof Uint8Array) {
+                              // Convert Uint8Array to a string (e.g., Base64)
+                              value = Buffer.from(value).toString('base64'); 
+                          }
+                          return [col, value as string | number | null];
+                      }))
+                  );
+              });
+              setQueryResults(tableData);
+          } else {
+              setQueryResults(null);
+          }
+      } catch (err) {
+          console.error("SQL Execution Error:", err);
+      }
   };
+
+
   
   const handleHorizontalResize = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -193,7 +214,9 @@ function App() {
               className="absolute left-0 w-full h-2 cursor-row-resize bg-gray-300"
             ></div>
           </div>
-          <div className="flex-grow p-2 bg-gray-200">SQL Output</div>
+          <div className="flex-grow p-2 bg-gray-200 overflow-hidden">
+            <QueryOutputTable results={queryResults} maxHeight={maxHeightRight * 0.80} />
+          </div>
         </div>
       </div>
     </div>
